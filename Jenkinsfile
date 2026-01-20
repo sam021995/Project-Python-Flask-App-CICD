@@ -3,10 +3,15 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-id')
-        IMAGE_NAME = 'theshubhamgour/flask-portfolio'
+        IMAGE_NAME = 'rashmidevops1/flask-portfolio'
     }
 
     stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/rashmigmr13-eng/Project-Python-Flask-App-CICD.git'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -17,29 +22,26 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 sh '''
-                echo $DOCKERHUB_CREDENTIALS_PSW | \
-                docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                docker push $IMAGE_NAME:$BUILD_NUMBER
+                  echo $DOCKERHUB_CREDENTIALS_PSW | docker login \
+                  -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                  docker push $IMAGE_NAME:$BUILD_NUMBER
                 '''
             }
         }
 
         stage('Deploy to Stage') {
             steps {
-                sh '''
-                docker rm -f flask-app || true
-                docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME:$BUILD_NUMBER
-                '''
+                sh 'docker run -d -p 5000:5000 $IMAGE_NAME:$BUILD_NUMBER'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Docker CI/CD Pipeline Completed Successfully!'
+            echo '✅ Build, Push & Deploy successful'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs.'
+            echo '❌ Pipeline failed'
         }
     }
 }
