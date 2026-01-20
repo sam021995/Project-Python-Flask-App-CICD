@@ -8,26 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/rashmigmr13-eng/Project-Python-Flask-App-CICD.git'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'python3 -m pip install --user -r requirements.txt'
-            }
-        }
-
-        stage('Run Lint Test') {
-            steps {
-                sh 'python3 -m pip install --user flake8'
-                sh 'flake8 . || true'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
@@ -56,7 +36,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Build, Test, and Deploy completed successfully!'
+            echo '✅ Docker CI/CD Pipeline Completed Successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs.'
