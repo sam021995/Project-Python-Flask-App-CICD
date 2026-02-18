@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-id')
         IMAGE_NAME = 'rashmidevops1/flask-portfolio'
     }
 
@@ -11,28 +10,33 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
+                sh "docker build -t $IMAGE_NAME:$BUILD_NUMBER ."
             }
         }
 
         stage('Push to DockerHub') {
             steps {
                 echo 'Pushing image to DockerHub...'
-                sh '''
-                  echo $DOCKERHUB_CREDENTIALS_PSW | docker login \
-                  -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                  docker push $IMAGE_NAME:$BUILD_NUMBER
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred-id', 
+                    usernameVariable: 'DOCKER_USER', 
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$BUILD_NUMBER
+                    """
+                }
             }
         }
 
         stage('Deploy to Stage') {
             steps {
                 echo 'Deploying application...'
-                sh '''
-                  docker rm -f flask-app || true
-                  docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME:$BUILD_NUMBER
-                '''
+                sh """
+                    docker rm -f flask-app || true
+                    docker run -d --name flask-app -p 5000:5000 $IMAGE_NAME:$BUILD_NUMBER
+                """
             }
         }
     }
