@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'rashmidevops1/flask-portfolio'
+        IMAGE_NAME = 'sam021995/flask-portfolio' // Correct Docker Hub repo path
     }
 
     stages {
